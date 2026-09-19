@@ -33,7 +33,7 @@ SUBMISSION_PATH = OUTPUT_DIR / "submission.json"
 sys.path.insert(0, str(DATA_DIR))
 sys.path.insert(0, str(SRC_DIR))
 
-from ui_common import init_shared_state, render_sidebar
+from ui_common import init_shared_state, render_sidebar, compute_verification_metrics
 from pipeline import run_pipeline_dataset
 from format_submission import convert_results_to_submission
 
@@ -68,13 +68,14 @@ def run_pipeline():
 
 results = st.session_state.get("results", [])
 
-# Compute operational counts if results exist
-total = len(results) if results else 0
-comparisons = sum(1 for r in results if r.get("category") == "document_comparison") if results else 0
-mismatches = sum(1 for r in results if r.get("mismatch_found") is True) if results else 0
-escalations = sum(1 for r in results if r.get("escalate") is True) if results else 0
-ok_count = sum(1 for r in results if r.get("mismatch_found") is False) if results else 0
-time_saved_hours = (comparisons * 6) / 60.0 if results else 0.0
+# Compute operational counts via central scoped function with sanity check
+metrics = compute_verification_metrics(results)
+total = metrics["total_emails"]
+comparisons = metrics["comparisons"]
+mismatches = metrics["mismatches"]
+escalations = metrics["escalations"]
+ok_count = metrics["verified_ok"]
+time_saved_hours = (comparisons * 6) / 60.0 if comparisons else 0.0
 
 # Top Control & Navigation Bar
 col_btn1, col_btn2, col_time = st.columns([2, 2.5, 4.5])

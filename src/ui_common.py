@@ -4,6 +4,7 @@ ui_common.py — Shared utilities, session state persistence, theme management, 
 
 from datetime import datetime
 import json
+import logging
 import sys
 from pathlib import Path
 import streamlit as st
@@ -18,6 +19,8 @@ SUBMISSION_PATH = OUTPUT_DIR / "submission.json"
 
 sys.path.insert(0, str(DATA_DIR))
 sys.path.insert(0, str(SRC_DIR))
+
+logger = logging.getLogger("shipdoc.verification")
 
 try:
     from loader import Inbox
@@ -50,6 +53,47 @@ def init_shared_state():
             st.session_state["last_run_timestamp"] = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
         else:
             st.session_state["last_run_timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def compute_verification_metrics(results):
+    """
+    Computes scoped verification metrics for document_comparison emails with built-in sanity assertion.
+
+    'Verified OK' strictly counts emails where:
+        category == 'document_comparison' AND mismatch_found == False AND escalate == False
+
+    Enforces invariant:
+        mismatches + escalations + verified_ok == total comparisons
+    """
+    total = len(results) if results else 0
+    comp_emails = [r for r in results if r.get("category") == "document_comparison"] if results else []
+    comparisons = len(comp_emails)
+
+    mismatches = sum(1 for r in comp_emails if r.get("mismatch_found") is True)
+    escalated = sum(1 for r in comp_emails if r.get("escalate") is True)
+    verified_ok = sum(1 for r in comp_emails if r.get("mismatch_found") is False and not r.get("escalate"))
+
+    # Strict sanity check assertion across comparison outcomes
+    checksum = mismatches + escalated + verified_ok
+    if comparisons > 0:
+        if checksum != comparisons:
+            err_msg = (
+                f"SANITY CHECK FAILURE: Verification outcomes ({checksum}) do not sum to total comparisons ({comparisons})! "
+                f"Breakdown -> Mismatches: {mismatches}, Escalated: {escalated}, Verified OK: {verified_ok}"
+            )
+            logger.warning(err_msg)
+        assert checksum == comparisons, (
+            f"Verification outcomes invariant broken: {mismatches} mismatches + {escalated} escalated + "
+            f"{verified_ok} verified != {comparisons} comparisons"
+        )
+
+    return {
+        "total_emails": total,
+        "comparisons": comparisons,
+        "mismatches": mismatches,
+        "escalations": escalated,
+        "verified_ok": verified_ok,
+    }
 
 
 def apply_custom_theme():
@@ -182,14 +226,17 @@ def render_sidebar():
 
     results = st.session_state.get("results", [])
     if results:
-        total = len(results)
-        mismatches = sum(1 for r in results if r.get("mismatch_found") is True)
-        escalated = sum(1 for r in results if r.get("escalate") is True)
-        
-        st.sidebar.markdown(f"**Dataset Status:**  \n`{total}` emails loaded")
+        metrics = compute_verification_metrics(results)
+        total = metrics["total_emails"]
+        comparisons = metrics["comparisons"]
+        mismatches = metrics["mismatches"]
+        escalated = metrics["escalations"]
+        verified_ok = metrics["verified_ok"]
+
+        st.sidebar.markdown(f"**Dataset Status:**  \n`{total}` emails loaded (`{comparisons}` SI/BL checks)")
         st.sidebar.markdown(f"- 🚨 <span class='color-mismatch'>Mismatches: {mismatches}</span>", unsafe_allow_html=True)
         st.sidebar.markdown(f"- ⚠️ <span class='color-escalate'>Escalations: {escalated}</span>", unsafe_allow_html=True)
-        st.sidebar.markdown(f"- ✅ <span class='color-match'>Verified OK: {total - mismatches - escalated}</span>", unsafe_allow_html=True)
+        st.sidebar.markdown(f"- ✅ <span class='color-match'>Verified OK: {verified_ok}</span>", unsafe_allow_html=True)
     else:
         st.sidebar.info("No pipeline results in memory. Visit **Dashboard** to run the pipeline.")
 
