@@ -26,12 +26,12 @@ def test_metrics_on_actual_dataset():
 
     results_path = OUTPUT_DIR / "results.json"
     assert results_path.exists(), f"results.json must exist at {results_path}"
-
+    
     with open(results_path, "r", encoding="utf-8") as f:
         results = json.load(f)
 
     metrics = compute_verification_metrics(results)
-
+    
     print(f"Total Emails Processed : {metrics['total_emails']}")
     print(f"Total SI/BL Checks     : {metrics['comparisons']}")
     print(f"Mismatches Flagged     : {metrics['mismatches']}")
@@ -52,6 +52,14 @@ def test_metrics_on_actual_dataset():
 
     print(">>> [PASSED] Invariant verified: 74 + 98 + 6 == 178.")
 
+    # Non-comparison emails must have mismatch_found is None AND escalate is None
+    non_comp = [r for r in results if r.get("category") != "document_comparison"]
+    assert len(non_comp) == 342, f"Expected 342 non-comparison emails, got {len(non_comp)}"
+    for r in non_comp:
+        assert r.get("mismatch_found") is None, f"{r['email_id']} mismatch_found must be None, got {r.get('mismatch_found')}"
+        assert r.get("escalate") is None, f"{r['email_id']} escalate must be None, got {r.get('escalate')}"
+    print(">>> [PASSED] Verified all 342 non-comparison emails strictly have null mismatch_found and escalate.")
+
 
 def test_assertion_triggers_on_bad_data():
     print("\n" + "=" * 75)
@@ -61,7 +69,7 @@ def test_assertion_triggers_on_bad_data():
     # Synthetic bad data where one document_comparison record is missing outcome
     bad_data = [
         {"category": "document_comparison", "mismatch_found": True, "escalate": False},
-        {"category": "document_comparison", "mismatch_found": None, "escalate": False},
+        {"category": "document_comparison", "mismatch_found": None, "escalate": False}, # Broken outcome
     ]
 
     try:

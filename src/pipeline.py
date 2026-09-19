@@ -143,7 +143,7 @@ def process_email(email: Dict[str, Any], inbox: Any) -> Dict[str, Any]:
           "category": ...,
           "mismatch_found": bool | None,
           "mismatches": [...] | None,
-          "escalate": bool,
+          "escalate": bool | None,
           "escalation_reason": str | None
         }
     """
@@ -183,13 +183,14 @@ def process_email(email: Dict[str, Any], inbox: Any) -> Dict[str, Any]:
         }
 
     # 2. If NOT document_comparison -> return classification result immediately
+    # Both mismatch_found and escalate are None (null) because no document extraction or comparison was attempted
     if category != "document_comparison":
         return {
             "email_id": email_id,
             "category": category,
             "mismatch_found": None,
             "mismatches": None,
-            "escalate": False,
+            "escalate": None,
             "escalation_reason": None,
         }
 
