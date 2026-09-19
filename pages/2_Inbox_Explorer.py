@@ -43,7 +43,13 @@ st.caption("Inspect logistics communications, cross-reference SI and BL attachme
 results = st.session_state.get("results", [])
 
 if not results:
-    st.warning("⚠️ No pipeline results in memory. Please visit **1_Dashboard** and click **'Run pipeline'** first.")
+    st.markdown("---")
+    st.error(
+        "### 💭 No pipeline data loaded yet\n\n"
+        "The inbox hasn't been processed. Please go to the **Dashboard** page and click "
+        "**'Run pipeline'** to load results — then come back here to explore the inbox."
+    )
+    st.page_link("pages/1_Dashboard.py", label="Go to Dashboard → Run pipeline", icon="🚀")
     st.stop()
 
 inbox = get_inbox()
@@ -66,7 +72,9 @@ with left_col:
     st.subheader("📬 Filter Inbox Records")
 
     # Metrics for status options mini-legend
+    # NOTE: compute_verification_metrics returns 'total_emails' (not 'total')
     metrics = compute_verification_metrics(results)
+    total_emails = metrics["total_emails"]  # explicit local var to prevent future key confusion
 
     # Dual filter controls: Category and Status
     f_col1, f_col2 = st.columns(2)
@@ -80,7 +88,7 @@ with left_col:
 
     with f_col2:
         status_options = [
-            f"All ({metrics['total']})",
+            f"All ({total_emails})",
             f"Verified (OK) ({metrics['verified_ok']})",
             f"Mismatch Detected ({metrics['mismatches']})",
             f"Needs Review (Escalated) ({metrics['escalations']})",
