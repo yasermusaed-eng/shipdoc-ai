@@ -54,14 +54,14 @@ def run_pipeline():
 
 
 def main():
-    st.title("🚢 Shipping Document Verification System (ShipDoc AI)")
-    st.caption("Averis × Monash Hackathon 2026 — Automated SI vs. BL Discrepancy Detection & Escalation")
+    st.title("\U0001f6a2 Shipping Document Verification System (ShipDoc AI)")
+    st.caption("Averis \u00d7 Monash Hackathon 2026 \u2014 Automated SI vs. BL Discrepancy Detection & Escalation")
 
     # Top Control Bar
     col_btn, col_metric1, col_metric2, col_metric3, col_metric4 = st.columns([2, 1, 1, 1, 1])
 
     with col_btn:
-        if st.button("🔄 Run pipeline", type="primary", use_container_width=True):
+        if st.button("\U0001f504 Run pipeline", type="primary", use_container_width=True):
             run_pipeline()
 
     results = load_results()
@@ -99,8 +99,8 @@ def main():
     ])
 
     with left_col:
-        st.subheader("📋 Processed Inbox Emails")
-        
+        st.subheader("\U0001f4cb Processed Inbox Emails")
+
         # Category filter for easy navigation during demo
         cat_filter = st.selectbox(
             "Filter Category",
@@ -114,7 +114,6 @@ def main():
         email_ids = filtered_df["email_id"].tolist()
         default_index = 0
         if "email_004" in email_ids:
-            # Highlight mismatch demo case if available
             default_index = email_ids.index("email_004")
 
         selected_email_id = st.selectbox(
@@ -132,7 +131,7 @@ def main():
         )
 
     with right_col:
-        st.subheader(f"🔍 Inspection: `{selected_email_id}`")
+        st.subheader(f"\U0001f50d Inspection: `{selected_email_id}`")
 
         # Find result record
         record = next((r for r in results if r.get("email_id") == selected_email_id), None)
@@ -151,13 +150,13 @@ def main():
 
         # Status badge
         if is_escalated:
-            st.warning(f"⚠️ **STATUS: NEEDS_REVIEW (Escalated)** — {record.get('escalation_reason')}")
+            st.warning(f"\u26a0\ufe0f **STATUS: NEEDS_REVIEW (Escalated)** \u2014 {record.get('escalation_reason')}")
         elif mismatch_found is True:
-            st.error("🚨 **STATUS: MISMATCH DETECTED** — One or more shipment fields differ between SI and BL.")
+            st.error("\U0001f6a8 **STATUS: MISMATCH DETECTED** \u2014 One or more shipment fields differ between SI and BL.")
         elif mismatch_found is False:
-            st.success("✅ **STATUS: VERIFIED (OK)** — No mismatch detected. All 7 fields match.")
+            st.success("\u2705 **STATUS: VERIFIED (OK)** \u2014 No mismatch detected. All 7 fields match.")
         else:
-            st.info(f"ℹ️ **Category:** `{cat}` (No document comparison required)")
+            st.info(f"\u2139\ufe0f **Category:** `{cat}` (No document comparison required)")
 
         # Side-by-side comparison for document_comparison
         if cat == "document_comparison":
@@ -178,7 +177,6 @@ def main():
                     comp_res = compare_documents(si_fields, bl_fields)
                     mismatched_fields = {m["field"] for m in comp_res.get("mismatches", [])}
 
-                    # Construct comparison rows
                     rows_html = []
                     for f in CANONICAL_FIELDS:
                         s_val = si_fields.get(f) or "*(null)*"
@@ -186,7 +184,6 @@ def main():
                         is_diff = f in mismatched_fields
 
                         if is_diff:
-                            # Highlighted in Red
                             row_style = "background-color: #ffebee; border-left: 4px solid #d32f2f; font-weight: bold; color: #b71c1c;"
                             tag = '<span style="color: #d32f2f; font-weight: bold;">[MISMATCH]</span>'
                         else:
@@ -221,8 +218,7 @@ def main():
                 else:
                     st.info("One or both document contents could not be read as text.")
 
-            # Raw documents expander
-            with st.expander("📄 View Raw Document Attachments"):
+            with st.expander("\U0001f4c4 View Raw Document Attachments"):
                 col_si, col_bl = st.columns(2)
                 with col_si:
                     st.caption(f"SI Attachment: `{si_path}`")
@@ -233,7 +229,7 @@ def main():
                     if bl_path:
                         st.code(inbox.read_text(bl_path) if bl_path.endswith('.txt') else '(binary file)')
         else:
-            with st.expander("✉️ View Raw Email Body", expanded=True):
+            with st.expander("\u2709\ufe0f View Raw Email Body", expanded=True):
                 st.text(raw_email.get("body", "(Empty body)"))
 
 
