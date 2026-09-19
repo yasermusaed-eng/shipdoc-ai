@@ -5,8 +5,7 @@ Contains:
 1. Filterable email table (email_id, category, mismatch_found, escalate)
 2. Interactive email selection and inspector panel
 3. Side-by-side 7-field SI vs BL comparison with red mismatch highlighting
-4. Theme-adaptive comparison table with full light/dark mode contrast compatibility
-5. Raw attachment and email body viewers
+4. Raw attachment and email body viewers
 """
 
 import sys
@@ -14,6 +13,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+# Setup module resolution
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 SRC_DIR = PROJECT_ROOT / "src"
@@ -22,7 +22,7 @@ OUTPUT_DIR = PROJECT_ROOT / "output"
 sys.path.insert(0, str(DATA_DIR))
 sys.path.insert(0, str(SRC_DIR))
 
-from ui_common import init_shared_state, render_sidebar, get_inbox
+from ui_common import init_shared_state, render_sidebar, get_inbox, compute_verification_metrics
 from extractor import extract_fields
 from comparator import compare_documents, CANONICAL_FIELDS
 from pipeline import _find_si_and_bl, _read_doc_text
@@ -33,6 +33,7 @@ st.set_page_config(
     layout="wide",
 )
 
+# Initialize persistent session state across pages
 init_shared_state()
 render_sidebar()
 
@@ -47,8 +48,10 @@ if not results:
 
 inbox = get_inbox()
 
+# Main 2-column layout
 left_col, right_col = st.columns([1, 1])
 
+# Convert results into DataFrame
 df = pd.DataFrame([
     {
         "email_id": r.get("email_id"),
@@ -62,33 +65,78 @@ df = pd.DataFrame([
 with left_col:
     st.subheader("📬 Filter Inbox Records")
 
-    cat_filter = st.selectbox(
-        "Filter Category",
-        ["All", "document_comparison", "invoice_query", "new_si_request", "general", "spam"],
-        index=0,
-    )
+    # Metrics for status options mini-legend
+    metrics = compute_verification_metrics(results)
 
+    # Dual filter controls: Category and Status
+    f_col1, f_col2 = st.columns(2)
+
+    with f_col1:
+        cat_filter = st.selectbox(
+            "Filter Category",
+            ["All", "document_comparison", "invoice_query", "new_si_request", "general", "spam"],
+            index=0,
+        )
+
+    with f_col2:
+        status_options = [
+            f"All ({metrics['total']})",
+            f"Verified (OK) ({metrics['verified_ok']})",
+            f"Mismatch Detected ({metrics['mismatches']})",
+            f"Needs Review (Escalated) ({metrics['escalations']})",
+        ]
+        status_filter = st.selectbox(
+            "Filter Status",
+            status_options,
+            index=0,
+        )
+
+    # 1. Apply category filter
     filtered_df = df if cat_filter == "All" else df[df["category"] == cat_filter]
 
+    # 2. Apply status filter independently
+    if status_filter.startswith("Verified (OK)"):
+        filtered_df = filtered_df[
+            (filtered_df["category"] == "document_comparison")
+            & (filtered_df["mismatch_found"] == False)
+            & (filtered_df["escalate"] == False)
+        ]
+    elif status_filter.startswith("Mismatch Detected"):
+        filtered_df = filtered_df[filtered_df["mismatch_found"] == True]
+    elif status_filter.startswith("Needs Review (Escalated)"):
+        filtered_df = filtered_df[filtered_df["escalate"] == True]
+
+    # Email selection dropdown (strictly scoped to filtered_df)
     email_ids = filtered_df["email_id"].tolist()
-    default_index = 0
-    if "email_004" in email_ids:
-        default_index = email_ids.index("email_004")
+    if email_ids:
+        default_index = 0
+        if "email_004" in email_ids:
+            default_index = email_ids.index("email_004")
 
-    selected_email_id = st.selectbox(
-        "Select an email record to inspect:",
-        email_ids,
-        index=default_index if email_ids else 0,
-    )
+        selected_email_id = st.selectbox(
+            f"Select an email record to inspect ({len(email_ids)} available):",
+            email_ids,
+            index=default_index,
+        )
+    else:
+        st.info("ℹ️ No email records match the selected Category + Status combination.")
+        selected_email_id = None
 
+    # Render Table
+    st.caption(f"Showing **{len(filtered_df)}** of **{len(df)}** emails")
     st.dataframe(
         filtered_df,
         use_container_width=True,
-        height=520,
+        height=480,
         hide_index=True,
     )
 
 with right_col:
+    if not selected_email_id:
+        st.subheader("🔍 Detail Inspection")
+        st.info("No email record matches the selected filters. Please adjust the filters on the left.")
+        st.stop()
+
     st.subheader(f"🔍 Detail Inspection: `{selected_email_id}`")
 
     record = next((r for r in results if r.get("email_id") == selected_email_id), None)
@@ -96,6 +144,7 @@ with right_col:
         st.info("Select an email from the left table.")
         st.stop()
 
+    # Raw email metadata
     raw_email = inbox.get(selected_email_id)
     st.markdown(f"**Subject:** {raw_email.get('subject', 'N/A')}")
     st.markdown(f"**From:** `{raw_email.get('from', 'N/A')}`")
@@ -104,6 +153,7 @@ with right_col:
     is_escalated = record.get("escalate")
     mismatch_found = record.get("mismatch_found")
 
+    # Status Badges
     if is_escalated:
         st.warning(f"⚠️ **STATUS: NEEDS_REVIEW (Escalated)** — {record.get('escalation_reason')}")
     elif mismatch_found is True:
@@ -113,6 +163,7 @@ with right_col:
     else:
         st.info(f"ℹ️ **Category:** `{cat}` (No document comparison required)")
 
+    # Side-by-side comparison for document_comparison
     if cat == "document_comparison":
         st.markdown("#### Side-by-Side 7-Field Comparison (SI vs. BL)")
 
@@ -173,6 +224,7 @@ with right_col:
             else:
                 st.info("One or both document contents could not be read as text.")
 
+        # Raw document attachments expander
         with st.expander("📄 View Raw Document Attachments"):
             col_si, col_bl = st.columns(2)
             with col_si:
