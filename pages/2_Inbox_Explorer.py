@@ -5,7 +5,8 @@ Contains:
 1. Filterable email table (email_id, category, mismatch_found, escalate)
 2. Interactive email selection and inspector panel
 3. Side-by-side 7-field SI vs BL comparison with red mismatch highlighting
-4. Raw attachment and email body viewers
+4. Theme-adaptive comparison table with full light/dark mode contrast compatibility
+5. Raw attachment and email body viewers
 """
 
 import sys
@@ -130,6 +131,7 @@ with right_col:
                 comp_res = compare_documents(si_fields, bl_fields)
                 mismatched_fields = {m["field"] for m in comp_res.get("mismatches", [])}
 
+                # Construct comparison table HTML with high-contrast theme-adaptive styling
                 rows_html = []
                 for f in CANONICAL_FIELDS:
                     s_val = si_fields.get(f) or "*(null)*"
@@ -137,29 +139,29 @@ with right_col:
                     is_diff = f in mismatched_fields
 
                     if is_diff:
-                        row_style = "background-color: #ffebee; border-left: 4px solid #d32f2f; font-weight: bold; color: #b71c1c;"
-                        tag = '<span style="color: #d32f2f; font-weight: bold;">[MISMATCH]</span>'
+                        row_class = "mismatch-row"
+                        tag = '<span style="color: #ef4444; font-weight: 800;">[MISMATCH]</span>'
                     else:
-                        row_style = "border-bottom: 1px solid #e0e0e0;"
-                        tag = '<span style="color: #2e7d32;">[MATCH]</span>'
+                        row_class = "match-row"
+                        tag = '<span style="color: #10b981; font-weight: 800;">[MATCH]</span>'
 
                     rows_html.append(
-                        f"<tr style='{row_style}'>"
-                        f"<td style='padding: 8px;'><code>{f}</code></td>"
-                        f"<td style='padding: 8px;'>{s_val}</td>"
-                        f"<td style='padding: 8px;'>{b_val}</td>"
-                        f"<td style='padding: 8px; text-align: center;'>{tag}</td>"
+                        f"<tr class='{row_class}'>"
+                        f"<td><code>{f}</code></td>"
+                        f"<td>{s_val}</td>"
+                        f"<td>{b_val}</td>"
+                        f"<td style='text-align: center;'>{tag}</td>"
                         f"</tr>"
                     )
 
                 table_html = f"""
-                <table style='width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px;'>
+                <table class='shipdoc-table'>
                     <thead>
-                        <tr style='background-color: #f5f5f5; border-bottom: 2px solid #ccc; text-align: left;'>
-                            <th style='padding: 8px;'>Field</th>
-                            <th style='padding: 8px;'>Shipping Instruction (SI)</th>
-                            <th style='padding: 8px;'>Bill of Lading (BL)</th>
-                            <th style='padding: 8px; text-align: center;'>Result</th>
+                        <tr>
+                            <th style='width: 22%;'>Field</th>
+                            <th style='width: 35%;'>Shipping Instruction (SI)</th>
+                            <th style='width: 35%;'>Bill of Lading (BL)</th>
+                            <th style='width: 8%; text-align: center;'>Result</th>
                         </tr>
                     </thead>
                     <tbody>

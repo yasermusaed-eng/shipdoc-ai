@@ -48,7 +48,7 @@ diagram_html = """
     <div style="flex: 1; border: 1px solid rgba(128,128,128,0.25); background: rgba(128,128,128,0.05); border-radius: 10px; padding: 14px; text-align: center;">
       <div style="font-size: 24px;">📥</div>
       <div style="font-weight: 700; font-size: 13px; margin: 4px 0;">1. Inbox Ingestion</div>
-      <div style="font-size: 11px; color: #6b7280;">Raw emails & attachments</div>
+      <div style="font-size: 11px; opacity: 0.8;">Raw emails & attachments</div>
     </div>
 
     <div style="font-size: 18px; color: #9ca3af; font-weight: bold;">➔</div>
@@ -57,7 +57,7 @@ diagram_html = """
     <div style="flex: 1; border: 1px solid #3b82f6; background: rgba(59, 130, 246, 0.08); border-radius: 10px; padding: 14px; text-align: center;">
       <div style="font-size: 24px;">🏷️</div>
       <div style="font-weight: 700; font-size: 13px; margin: 4px 0; color: #2563eb;">2. Triage & Classify</div>
-      <div style="font-size: 11px; color: #6b7280;">Filter 5 categories</div>
+      <div style="font-size: 11px; opacity: 0.8;">Filter 5 categories</div>
     </div>
 
     <div style="font-size: 18px; color: #9ca3af; font-weight: bold;">➔</div>
@@ -66,7 +66,7 @@ diagram_html = """
     <div style="flex: 1; border: 1px solid #8b5cf6; background: rgba(139, 92, 246, 0.08); border-radius: 10px; padding: 14px; text-align: center;">
       <div style="font-size: 24px;">📑</div>
       <div style="font-weight: 700; font-size: 13px; margin: 4px 0; color: #7c3aed;">3. Field Extraction</div>
-      <div style="font-size: 11px; color: #6b7280;">7 canonical fields (SI & BL)</div>
+      <div style="font-size: 11px; opacity: 0.8;">7 canonical fields (SI & BL)</div>
     </div>
 
     <div style="font-size: 18px; color: #9ca3af; font-weight: bold;">➔</div>
@@ -75,7 +75,7 @@ diagram_html = """
     <div style="flex: 1; border: 1px solid #10b981; background: rgba(16, 185, 129, 0.08); border-radius: 10px; padding: 14px; text-align: center;">
       <div style="font-size: 24px;">⚖️</div>
       <div style="font-weight: 700; font-size: 13px; margin: 4px 0; color: #059669;">4. Deterministic Compare</div>
-      <div style="font-size: 11px; color: #6b7280;">Zero LLM hallucination</div>
+      <div style="font-size: 11px; opacity: 0.8;">Zero LLM hallucination</div>
     </div>
 
     <div style="font-size: 18px; color: #9ca3af; font-weight: bold;">➔</div>
@@ -84,7 +84,7 @@ diagram_html = """
     <div style="flex: 1; border: 1px solid #f59e0b; background: rgba(245, 158, 11, 0.08); border-radius: 10px; padding: 14px; text-align: center;">
       <div style="font-size: 24px;">🛡️</div>
       <div style="font-weight: 700; font-size: 13px; margin: 4px 0; color: #d97706;">5. Escalate or Report</div>
-      <div style="font-size: 11px; color: #6b7280;">Flag diffs or ask for help</div>
+      <div style="font-size: 11px; opacity: 0.8;">Flag diffs or ask for help</div>
     </div>
 
   </div>
@@ -146,8 +146,8 @@ with col_t1:
     <div style="border: 1px solid rgba(128,128,128,0.25); border-radius: 8px; padding: 12px; background: rgba(128,128,128,0.03);">
         <div style="font-size: 20px;">🧠</div>
         <div style="font-weight: 700; font-size: 13px; margin-top: 4px;">LLM Intelligence</div>
-        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">Google Gemini 2.5 Flash</div>
-        <div style="font-size: 11px; color: #9ca3af;">(Structured JSON schema output + OpenAI fallback)</div>
+        <div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">Google Gemini 2.5 Flash</div>
+        <div style="font-size: 11px; opacity: 0.65;">(Structured JSON schema output + OpenAI fallback)</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -156,8 +156,8 @@ with col_t2:
     <div style="border: 1px solid rgba(128,128,128,0.25); border-radius: 8px; padding: 12px; background: rgba(128,128,128,0.03);">
         <div style="font-size: 20px;">🖥️</div>
         <div style="font-weight: 700; font-size: 13px; margin-top: 4px;">Frontend Dashboard</div>
-        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">Streamlit 1.55</div>
-        <div style="font-size: 11px; color: #9ca3af;">Native multipage architecture & session-state persistence</div>
+        <div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">Streamlit 1.55</div>
+        <div style="font-size: 11px; opacity: 0.65;">Native multipage architecture & session-state persistence</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -166,8 +166,8 @@ with col_t3:
     <div style="border: 1px solid rgba(128,128,128,0.25); border-radius: 8px; padding: 12px; background: rgba(128,128,128,0.03);">
         <div style="font-size: 20px;">⚙️</div>
         <div style="font-weight: 700; font-size: 13px; margin-top: 4px;">Core Logic Engine</div>
-        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">Python 3.12 Standard Library</div>
-        <div style="font-size: 11px; color: #9ca3af;">Auditable rule-based comparison + regex offline fallback</div>
+        <div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">Python 3.12 Standard Library</div>
+        <div style="font-size: 11px; opacity: 0.65;">Auditable rule-based comparison + regex offline fallback</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -176,8 +176,8 @@ with col_t4:
     <div style="border: 1px solid rgba(128,128,128,0.25); border-radius: 8px; padding: 12px; background: rgba(128,128,128,0.03);">
         <div style="font-size: 20px;">📦</div>
         <div style="font-weight: 700; font-size: 13px; margin-top: 4px;">Deployment & Evaluation</div>
-        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">Docker & Git SCM</div>
-        <div style="font-size: 11px; color: #9ca3af;">Scoreboard submission API & containerized grading</div>
+        <div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">Docker & Git SCM</div>
+        <div style="font-size: 11px; opacity: 0.65;">Scoreboard submission API & containerized grading</div>
     </div>
     """, unsafe_allow_html=True)
 

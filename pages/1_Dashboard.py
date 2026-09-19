@@ -10,8 +10,9 @@ Contains:
    - Human Escalations
    - Estimated manual review time saved (in hours, based on 6 min/comparison benchmark)
 3. Direct "View Escalation Queue" button with dynamic pending count badge
-4. Triage noise filtering bar chart (document_comparison, new_si_request, invoice_query, general, spam)
-5. Breakdown of categories and verification outcomes
+4. Persistent "last pipeline run" timestamp display
+5. Triage noise filtering bar chart (document_comparison, new_si_request, invoice_query, general, spam)
+6. Breakdown of categories and verification outcomes
 """
 
 import json
@@ -59,6 +60,8 @@ def run_pipeline():
             json.dump(submission, f, indent=2)
         # Update session state to persist across all pages
         st.session_state["results"] = results
+        from datetime import datetime
+        st.session_state["last_run_timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     st.success("Pipeline executed successfully! Results refreshed and saved.")
     st.rerun()
 
@@ -74,7 +77,7 @@ ok_count = sum(1 for r in results if r.get("mismatch_found") is False) if result
 time_saved_hours = (comparisons * 6) / 60.0 if results else 0.0
 
 # Top Control & Navigation Bar
-col_btn1, col_btn2, col_spacer = st.columns([2, 2.5, 4.5])
+col_btn1, col_btn2, col_time = st.columns([2, 2.5, 4.5])
 
 with col_btn1:
     if st.button("🔄 Run pipeline", type="primary", use_container_width=True):
@@ -84,6 +87,15 @@ with col_btn2:
     escalation_label = f"⚠️ View Escalation Queue ({escalations})"
     if st.button(escalation_label, use_container_width=True):
         st.switch_page("pages/3_Escalation_Queue.py")
+
+with col_time:
+    last_run = st.session_state.get("last_run_timestamp", "Active")
+    st.markdown(
+        f"<div style='text-align: right; padding-top: 8px; font-size: 13px; opacity: 0.85;'>"
+        f"🕒 <strong>Last Pipeline Run:</strong> <code>{last_run}</code>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
 
 st.divider()
 

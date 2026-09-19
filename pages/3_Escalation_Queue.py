@@ -158,11 +158,11 @@ else:
                         From: <code style="color: inherit;">{sender}</code> &nbsp;•&nbsp; Attachments: <code>{', '.join(attachments) if attachments else 'None'}</code>
                     </div>
                     <!-- PROMINENT ESCALATION CALLOUT BOX -->
-                    <div style="background-color: #fffbeb; border-left: 5px solid #d97706; padding: 12px 14px; border-radius: 6px; margin: 10px 0;">
-                        <div style="color: #92400e; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">
+                    <div style="background-color: rgba(245, 158, 11, 0.12); border-left: 5px solid #f59e0b; padding: 12px 14px; border-radius: 6px; margin: 10px 0;">
+                        <div style="color: #f59e0b; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
                             ⚠️ Explicit Escalation Trigger / Reason:
                         </div>
-                        <div style="color: #78350f; font-family: monospace; font-size: 13px; font-weight: 600; line-height: 1.4;">
+                        <div style="color: inherit; font-family: monospace; font-size: 13px; font-weight: 600; line-height: 1.4;">
                             {reason}
                         </div>
                     </div>
